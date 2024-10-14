@@ -62,7 +62,7 @@ import { DashboardNav } from "@/components/nav";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast"
 import { API_URL } from "@/constants";
-
+import MinimalLoading from "@/components/loading";
 type CompanyData = {
   id: number
   collegeName: string
@@ -75,6 +75,8 @@ type SuggestionOption = "college_name" | null
 function EditDeleteData() {
   const [collegeName, setCollegeName] = useState("")
   const [searchResults, setSearchResults] = useState<CompanyData[]>([])
+  const [uniqueCompanies, setUniqueCompanies] = useState<CompanyData[]>([])
+  const [companiesCountRecord, setCompaniesCountRecord] = useState<Record<string, CompanyData[]>>({})
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null)
   const [editForm, setEditForm] = useState({
     companyName: '',
@@ -134,6 +136,9 @@ function EditDeleteData() {
     };
   }, []);
 
+  const companiesCountRecordIdentifier = (company: CompanyData)=>{
+    return `${company.companyName} - ${company.role}`
+  }
 
   const handleSearch = async () => {
     if (!collegeName) {
@@ -176,20 +181,32 @@ function EditDeleteData() {
         ({ id: item.id, collegeName: item.college_name, companyName: item.company_name, role: item.role, ctc: item.ctc })
       )
       setSearchResults(mockResults);
+      
+
+      const uc: CompanyData[] = []; // if it is double that takes the first one
+      const counts: Record<string, CompanyData[]> = {};
+      const seen = new Set();
+    
+      mockResults.forEach(company => {
+        const identifier = companiesCountRecordIdentifier(company);
+        // Initialize the array if it doesn't exist
+        if (!counts[identifier]) counts[identifier] = [];
+        // Count occurrences
+        counts[identifier].push(company);
+    
+        if (!seen.has(identifier)) {
+          seen.add(identifier);
+          uc.push(company);
+        }
+      });
+      setUniqueCompanies(uc);
+      setCompaniesCountRecord(counts);
 
     } catch (err ) {
       if (err instanceof Error) {
         alert(err.message);
       }
     } finally {}
-
-    // Here you would typically make an API call to search for the college
-    // For demonstration, we'll just create some mock results
-    // const mockResults: CompanyData[] = [
-    //   { id: 1, collegeName: "MIT", companyName: "Google", role: "Software Engineer", ctc: 150000 },
-    //   { id: 2, collegeName: "MIT", companyName: "Apple", role: "Product Manager", ctc: 180000 },
-    // ]
-    // setSearchResults(mockResults)
   }
 
   const handleCompanySelect = (companyId: string) => {
@@ -359,8 +376,8 @@ function EditDeleteData() {
     }
   };
 
-  if (loading){
-    return <>Loading...</>
+  if(loading){
+    return <MinimalLoading />
   }
 
   return (
@@ -378,13 +395,13 @@ function EditDeleteData() {
             placeholder="Enter College Name to Edit/Delete"
           />
           {filteredSuggestions.length > 0 && suggestionOption === "college_name" && (
-            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-white rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto">
               {filteredSuggestions.map((suggestion, index) => (
                 <li
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-gray-200' : ''}`}
+                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-muted' : ''}`}
                 >
                   {suggestion}
                 </li>
@@ -403,7 +420,7 @@ function EditDeleteData() {
               <SelectValue placeholder="Select a company" />
             </SelectTrigger>
             <SelectContent>
-              {searchResults.map(company => (
+              {uniqueCompanies.map(company => (
                 <SelectItem key={company.id} value={company.id.toString()}>
                   {company.companyName} - {company.role}
                 </SelectItem>
@@ -415,6 +432,23 @@ function EditDeleteData() {
 
       {selectedCompany && (
         <div className="space-y-4 max-w-md mx-auto">
+          {companiesCountRecord[companiesCountRecordIdentifier(selectedCompany)] && companiesCountRecord[companiesCountRecordIdentifier(selectedCompany)].length > 1 && (
+            <div className="space-y-4 max-w-md mb-8 mx-auto">
+              <Label htmlFor="ctcSelect">Select a CTC</Label>
+              <Select onValueChange={handleCompanySelect}>
+                <SelectTrigger id="ctcSelect">
+                  <SelectValue placeholder="Select a CTC" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companiesCountRecord[companiesCountRecordIdentifier(selectedCompany)].map(company => (
+                    <SelectItem key={company.id} value={company.id.toString()}>
+                      {company.ctc}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div>
             <Label htmlFor="companyName">Company Name</Label>
             <Input
@@ -440,6 +474,7 @@ function EditDeleteData() {
               name="ctc"
               value={editForm.ctc}
               onChange={handleInputChange}
+              type="number"
             />
           </div>
           <div className="space-x-4">
@@ -500,10 +535,10 @@ function EditDeleteData() {
 }
 
 const navItems = [
-  { name: 'View All Data', href: '/', icon: <Database className="mr-2 h-4 w-4" /> },
+  { name: 'Search Data', href: '/', icon: <Search className="mr-2 h-4 w-4" /> },
   { name: 'Add Data', href: '/add', icon: <FilePlus className="mr-2 h-4 w-4" /> },
   { name: 'Edit/Delete Data', href: '/edit', icon: <Edit className="mr-2 h-4 w-4" /> },
-  { name: 'Search Data', href: '/search', icon: <Search className="mr-2 h-4 w-4" /> },
+  { name: 'View All Data', href: '/view', icon: <Database className="mr-2 h-4 w-4" /> },
   { name: 'Mass Upload', href: '/upload', icon: <Upload className="mr-2 h-4 w-4" /> },
 ]
 

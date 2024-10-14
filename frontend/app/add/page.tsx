@@ -277,13 +277,13 @@ function AddData() {
             placeholder="Enter College Name"
           />
           {filteredSuggestions.length > 0 && suggestionOption === "college_name" && (
-            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-white rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto">
               {filteredSuggestions.map((suggestion, index) => (
                 <li
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-gray-200' : ''}`}
+                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-muted' : ''}`}
                 >
                   {suggestion}
                 </li>
@@ -303,13 +303,13 @@ function AddData() {
             placeholder="Enter Company Name"
           />
           {filteredSuggestions.length > 0  && suggestionOption === "company_name" && (
-            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-white rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto">
               {filteredSuggestions.map((suggestion, index) => (
                 <li
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-gray-200' : ''}`}
+                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-muted' : ''}`}
                 >
                   {suggestion}
                 </li>
@@ -329,13 +329,13 @@ function AddData() {
             placeholder="Enter Role"
           />
           {filteredSuggestions.length > 0 && suggestionOption === "role" && (
-            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-white rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto">
               {filteredSuggestions.map((suggestion, index) => (
                 <li
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-gray-200' : ''}`}
+                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-muted' : ''}`}
                 >
                   {suggestion}
                 </li>
@@ -361,10 +361,10 @@ function AddData() {
 }
 
 const navItems = [
-  { name: 'View All Data', href: '/', icon: <Database className="mr-2 h-4 w-4" /> },
+  { name: 'Search Data', href: '/', icon: <Search className="mr-2 h-4 w-4" /> },
   { name: 'Add Data', href: '/add', icon: <FilePlus className="mr-2 h-4 w-4" /> },
   { name: 'Edit/Delete Data', href: '/edit', icon: <Edit className="mr-2 h-4 w-4" /> },
-  { name: 'Search Data', href: '/search', icon: <Search className="mr-2 h-4 w-4" /> },
+  { name: 'View All Data', href: '/view', icon: <Database className="mr-2 h-4 w-4" /> },
   { name: 'Mass Upload', href: '/upload', icon: <Upload className="mr-2 h-4 w-4" /> },
 ]
 

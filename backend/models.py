@@ -1,7 +1,7 @@
 from typing import NewType, Union, List, Optional, Any, Tuple, Dict, NamedTuple
 
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, UniqueConstraint, asc, desc, and_
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship, declarative_base, Mapped
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import sessionmaker, Session, scoped_session
 from sqlalchemy.exc import IntegrityError
@@ -29,23 +29,23 @@ Base = declarative_base()
 # Association table for the many-to-many relationship
 class CompanyCollege(Base):
     __tablename__ = 'company_college'
-    company_id = Column(Integer, ForeignKey('companies.id'), primary_key=True)
-    college_id = Column(Integer, ForeignKey('colleges.id'), primary_key=True)
+    company_id: Mapped[int] = Column(Integer, ForeignKey('companies.id'), primary_key=True)
+    college_id: Mapped[int] = Column(Integer, ForeignKey('colleges.id'), primary_key=True)
     
 class Company(Base):
     __tablename__ = 'companies'
     
-    id = Column(Integer, primary_key=True)
-    company_name = Column(String, nullable=False)
-    role = Column(String, nullable=False)
-    ctc = Column(Float, nullable=False)
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    company_name: Mapped[str] = Column(String, nullable=False)
+    role: Mapped[str] = Column(String, nullable=False)
+    ctc: Mapped[float] = Column(Float, nullable=False)
 
     __table_args__ = (
         UniqueConstraint('company_name', 'role', 'ctc', name='uix_company_role_ctc'),
     )
 
     # Relationship to colleges
-    colleges = relationship("College", secondary="company_college", back_populates="companies") # , cascade="all, delete-orphan")
+    colleges: Mapped[List["College"]] = relationship("College", secondary="company_college", back_populates="companies") # , cascade="all, delete-orphan")
     
     @staticmethod
     def get(session: Session, company_name: str, role: str, ctc: float) -> Optional["Company"]:
@@ -91,11 +91,11 @@ class Company(Base):
 class College(Base):
     __tablename__ = 'colleges'
     
-    id = Column(Integer, primary_key=True)
-    college_name = Column(String, nullable=False, unique=True)
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    college_name: Mapped[str] = Column(String, nullable=False, unique=True)
 
     # Relationship to companies
-    companies = relationship("Company", secondary="company_college", back_populates="colleges") # , cascade="all, delete-orphan")
+    companies: Mapped[List["Company"]] = relationship("Company", secondary="company_college", back_populates="colleges") # , cascade="all, delete-orphan")
     
     @staticmethod
     def get(session: Session, college_name: str) -> Optional["College"]:

@@ -36,7 +36,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-          <main className="mx-1">{children}</main>
+          <main className="mx-2">{children}</main>
           <Toaster />
         </ThemeProvider>
       </body>
