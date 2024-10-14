@@ -7,10 +7,10 @@ import { DashboardNav } from '@/components/nav'
 import { API_URL } from "@/constants";
 
 const navItems = [
-  { name: 'Search Data', href: '/', icon: <Search className="mr-2 h-4 w-4" /> },
-  { name: 'Add Data', href: '/add', icon: <FilePlus className="mr-2 h-4 w-4" /> },
-  { name: 'Edit/Delete Data', href: '/edit', icon: <Edit className="mr-2 h-4 w-4" /> },
-  { name: 'View All Data', href: '/view', icon: <Database className="mr-2 h-4 w-4" /> },
+  { name: 'Search', href: '/', icon: <Search className="mr-2 h-4 w-4" /> },
+  { name: 'Add', href: '/add', icon: <FilePlus className="mr-2 h-4 w-4" /> },
+  { name: 'Edit/Delete', href: '/edit', icon: <Edit className="mr-2 h-4 w-4" /> },
+  { name: 'View All', href: '/view', icon: <Database className="mr-2 h-4 w-4" /> },
   { name: 'Mass Upload', href: '/upload', icon: <Upload className="mr-2 h-4 w-4" /> },
 ]
 

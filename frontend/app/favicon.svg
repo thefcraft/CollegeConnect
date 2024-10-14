@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 32 32" fill="none"
+    xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="8" width="10" height="16" fill="#4CAF50" rx="2" />
+    <path d="M4 10 L14 10" stroke="white" strokeWidth="2" />
+    <path d="M4 14 L14 14" stroke="white" strokeWidth="2" />
+
+    <rect x="18" y="12" width="10" height="12" fill="#2196F3" rx="2" />
+    <path d="M20 12 V10 H26 V12" stroke="#2196F3" strokeWidth="2" />
+
+    <path d="M14 16 Q18 8 18 16" stroke="#FFC107" strokeWidth="2" strokeLinecap="round">
+        <animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="3s" repeatCount="indefinite" />
+    </path>
+
+    <circle cx="9" cy="20" r="2" fill="white" />
+    <circle cx="9" cy="20" r="1" fill="black">
+        <animateTransform attributeName="transform" type="rotate" from="0 9 20" to="360 9 20" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="23" cy="20" r="2" fill="white" />
+    <circle cx="23" cy="20" r="1" fill="black">
+        <animateTransform attributeName="transform" type="rotate" from="0 23 20" to="360 23 20" dur="2s" repeatCount="indefinite" />
+    </circle>
+</svg>

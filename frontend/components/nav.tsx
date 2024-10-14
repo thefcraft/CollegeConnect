@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Menu, X, LayoutDashboard, Database , Sun, Moon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
+import { Logo } from './others'
+
 export function DashboardNav(
     {navItems}: {navItems: {name: string;
                             href: string;
@@ -33,8 +35,9 @@ export function DashboardNav(
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <a href="/"><LayoutDashboard className="h-8 w-8 text-primary" /></a>
-                <a className="md:hidden lg:block ml-2 text-xl font-bold text-foreground" href='/'>MNC-TCP</a>
+                <a href="/"><Logo width={48} height={48}/></a>
+                <a className="md:hidden lg:block ml-2 text-xl font-bold text-foreground" href='/'>College-Connect</a>
+                {/* <a className="hidden md:block lg:hidden ml-2 text-xl font-bold text-foreground" href='/'>C-C</a> */}
               </div>
             </div>
             <div className="hidden md:flex md:ml-6 md:space-x-4 lg:space-x-8">
