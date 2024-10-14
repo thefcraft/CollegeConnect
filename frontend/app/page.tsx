@@ -70,6 +70,10 @@ type SearchResult = {
   company_name: string;
   role: string;
   ctc: number;
+  hr_name: string | null;
+  linkedin_id: string | null;
+  email: string | null;
+  contact_number: string | null;
 }
 type SuggestionOption = "college_name" | "company_name" | "role";
 type SearchOption = "Filter by Multiple Criteria" | "College Name" | "Company Name" | "Role";
@@ -258,7 +262,10 @@ function SearchData() {
   const handleSearch = async () => {
     if (searchOption !== "Filter by Multiple Criteria"  && !searchTerm) {
       alert("Please enter a search term.")
-      return
+      return;
+    }else if(searchOption === "Filter by Multiple Criteria" && !formData.collegeName && !formData.companyName && !formData.role) {
+        alert('enter at least one search term!!!');
+        return;
     }
     setSearchLoading(true);
     let query: {college_name: string | null, company_name: string | null, role: string | null} = {
@@ -286,15 +293,7 @@ function SearchData() {
       if (!response.ok) {
           throw new Error('Network response was not ok');
       }
-      const items: {
-        id: number;
-        college_id: number;
-        college_name: string;
-        company_id: number;
-        company_name: string;
-        role: string;
-        ctc: number;
-      }[] = await response.json();
+      const items = await response.json();
       if(items.length === 0) {
         alert('No items were found...');
       }
@@ -497,6 +496,26 @@ function SearchData() {
                   {sortBy === "ctc" && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
+              <TableHead className="min-w-[100px] max-w-[100px]">
+                <Button variant="ghost" disabled>
+                  Hr Name
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[100px] max-w-[100px]">
+                <Button variant="ghost" disabled>
+                  LinkedIn
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[100px] max-w-[100px]">
+                <Button variant="ghost" disabled>
+                  Email
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[100px] max-w-[100px]">
+                <Button variant="ghost" disabled>
+                  Contact No
+                </Button>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -512,7 +531,19 @@ function SearchData() {
                   {item.role}
                 </TableCell>
                 <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
-                  {`$${Intl.NumberFormat('en-US').format(item.ctc)}`}
+                  {`₹${Intl.NumberFormat('en-US').format(item.ctc)}`}
+                </TableCell>
+                <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {item.hr_name}
+                </TableCell>
+                <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {item.linkedin_id}
+                </TableCell>
+                <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {item.email}
+                </TableCell>
+                <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {item.contact_number}
                 </TableCell>
               </TableRow>
             ))}

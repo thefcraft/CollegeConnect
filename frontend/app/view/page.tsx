@@ -43,6 +43,10 @@ function ViewAllData() {
     company_name: string;
     role: string;
     ctc: number;
+    hr_name: string | null;
+    linkedin_id: string | null;
+    email: string | null;
+    contact_number: string | null;
 }[]>([])
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("college_name")
@@ -52,7 +56,11 @@ function ViewAllData() {
     college_name: "",
     company_name: "",
     role: "",
-    ctc: 0
+    ctc: 0,
+    hr_name: "",
+    linkedin_id : "",
+    email: "",
+    contact_number: ""
   })
 
   const [sortByDefault, setSortByDefault] = useState(true);
@@ -108,7 +116,16 @@ function ViewAllData() {
     const itemToEdit = data.find(item => item.id === id)
     if (itemToEdit) {
       setEditingId(id)
-      setEditForm(itemToEdit)
+      setEditForm({
+        college_name: itemToEdit.college_name,
+        company_name: itemToEdit.company_name,
+        role: itemToEdit.role,
+        ctc: itemToEdit.ctc,
+        hr_name: itemToEdit.hr_name?itemToEdit.hr_name:"",
+        linkedin_id : itemToEdit.linkedin_id?itemToEdit.linkedin_id:"",
+        email: itemToEdit.email?itemToEdit.email:"",
+        contact_number: itemToEdit.contact_number?itemToEdit.contact_number:""
+      })
     }
   }
   
@@ -126,7 +143,8 @@ function ViewAllData() {
           },
           body: JSON.stringify({ 
             old_college_name: item.college_name, old_company_name: item.company_name, old_role: item.role, old_ctc: item.ctc,
-            new_college_name: editForm.college_name, new_company_name: editForm.company_name, new_role: editForm.role, new_ctc: editForm.ctc
+            new_college_name: editForm.college_name, new_company_name: editForm.company_name, new_role: editForm.role, new_ctc: editForm.ctc,
+            new_hr_name: editForm.hr_name, new_linkedin_id: editForm.linkedin_id, new_email: editForm.email, new_contact_number: editForm.contact_number
            }), 
         });
         if (!response.ok) {
@@ -270,6 +288,26 @@ function ViewAllData() {
                   {sortBy === "ctc" && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
+              <TableHead className="min-w-[100px] max-w-[100px]">
+                <Button variant="ghost" disabled>
+                  Hr Name
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[100px] max-w-[100px]">
+                <Button variant="ghost" disabled>
+                  LinkedIn
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[100px] max-w-[100px]">
+                <Button variant="ghost" disabled>
+                  Email
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[100px] max-w-[100px]">
+                <Button variant="ghost" disabled>
+                  Contact No
+                </Button>
+              </TableHead>
               <TableHead className="min-w-[100px] max-w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -281,6 +319,7 @@ function ViewAllData() {
                     <Input
                       value={editForm.college_name}
                       onChange={(e) => setEditForm({ ...editForm, college_name: e.target.value })}
+                      required
                     />
                   ) : (
                     item.college_name
@@ -291,6 +330,7 @@ function ViewAllData() {
                     <Input
                       value={editForm.company_name}
                       onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value })}
+                      required
                     />
                   ) : (
                     item.company_name
@@ -301,6 +341,7 @@ function ViewAllData() {
                     <Input
                       value={editForm.role}
                       onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                      required
                     />
                   ) : (
                     item.role
@@ -312,9 +353,50 @@ function ViewAllData() {
                       type="number"
                       value={editForm.ctc}
                       onChange={(e) => setEditForm({ ...editForm, ctc: parseInt(e.target.value) })}
+                      required
                     />
                   ) : (
-                    `$${Intl.NumberFormat('en-US').format(item.ctc)}`
+                    `₹${Intl.NumberFormat('en-US').format(item.ctc)}`
+                  )}
+                </TableCell>
+                <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {editingId === item.id ? (
+                    <Input
+                      value={editForm.hr_name}
+                      onChange={(e) => setEditForm({ ...editForm, hr_name: e.target.value })}
+                    />
+                  ) : (
+                    `${item.hr_name?item.hr_name:''}`
+                  )}
+                </TableCell>
+                <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {editingId === item.id ? (
+                    <Input
+                      value={editForm.linkedin_id}
+                      onChange={(e) => setEditForm({ ...editForm, linkedin_id: e.target.value })}
+                    />
+                  ) : (
+                    `${item.linkedin_id?item.linkedin_id:''}`
+                  )}
+                </TableCell>
+                <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {editingId === item.id ? (
+                    <Input
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    />
+                  ) : (
+                    `${item.email?item.email:''}`
+                  )}
+                </TableCell>
+                <TableCell className="py-4 min-w-[100px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  {editingId === item.id ? (
+                    <Input
+                      value={editForm.contact_number}
+                      onChange={(e) => setEditForm({ ...editForm, contact_number: e.target.value })}
+                    />
+                  ) : (
+                    `${item.contact_number?item.contact_number:''}`
                   )}
                 </TableCell>
                 <TableCell className="py-4 min-w-[100px] max-w-[100px]">
@@ -326,7 +408,15 @@ function ViewAllData() {
                                                                                     item.college_name == editForm.college_name && 
                                                                                     item.company_name == editForm.company_name && 
                                                                                     item.role == editForm.role && 
-                                                                                    item.ctc == editForm.ctc)}>
+                                                                                    item.ctc == editForm.ctc &&
+                                                                                    (item.hr_name?item.hr_name:'') == editForm.hr_name &&
+                                                                                    (item.linkedin_id?item.linkedin_id:'') == editForm.linkedin_id &&
+                                                                                    (item.email?item.email:'') == editForm.email &&
+                                                                                    (item.contact_number?item.contact_number:'') == editForm.contact_number
+                                                                                  ) || !(
+                                                                                      editForm.college_name && editForm.company_name &&
+                                                                                      editForm.role && editForm.ctc
+                                                                                    ) || (editForm.ctc<=0)}>
                             <Save className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>

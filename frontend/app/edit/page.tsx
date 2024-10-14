@@ -81,12 +81,12 @@ function EditDeleteData() {
   const [editForm, setEditForm] = useState({
     companyName: '',
     role: '',
-    ctc: ''
+    ctc: 0
   })
   const [editFormReal, setEditFormReal] = useState({
     companyName: '',
     role: '',
-    ctc: ''
+    ctc: 0
   })
 
   const { toast } = useToast();
@@ -216,7 +216,7 @@ function EditDeleteData() {
       const value = {
         companyName: selected.companyName,
         role: selected.role,
-        ctc: selected.ctc.toString()
+        ctc: selected.ctc
       }
       setEditForm(value);
       setEditFormReal(value);
@@ -266,10 +266,7 @@ function EditDeleteData() {
 
     if (editForm.companyName && editForm.role && editForm.ctc) {
       try {
-        const ctcFloat = parseFloat(editForm.ctc)
-        if (isNaN(ctcFloat)) {
-          throw new Error("Invalid CTC value")
-        }
+        const ctcFloat = editForm.ctc
         // Here you would typically make an API call to update the data
         console.log("Updating data:", { ...editForm, ctc: ctcFloat })
         editFn();
@@ -310,10 +307,10 @@ function EditDeleteData() {
           if (!response.ok) {
               throw new Error('Network response was not ok');
           }
-          const result = await response.json();
+          // const result = await response.json();
           toast({
             title: "Success",
-            description: `Data deleted successfully! ${result}`,
+            description: `Data deleted successfully!`,
           })
         } catch (err ) {
           if (err instanceof Error) {
@@ -484,7 +481,13 @@ function EditDeleteData() {
                 <Button disabled={(
                                     editFormReal.companyName == editForm.companyName && 
                                     editFormReal.role == editForm.role && 
-                                    editFormReal.ctc == editForm.ctc)}>
+                                    editFormReal.ctc == editForm.ctc) || 
+                                  !(
+                                      editForm.companyName && editForm.companyName &&
+                                      editForm.role && editForm.ctc
+                                  ) || 
+                                  (editForm.ctc<=0)
+                                }>
                     Update Data
                 </Button>
               </AlertDialogTrigger>

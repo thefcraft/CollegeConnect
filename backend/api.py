@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import NewType, Union, List, Optional, Any, Tuple, Dict, NamedTuple
-from models import PostgreSQL, College, Company, CompanyCollege, SortBy, SortByOptions, Order, OrderOptions
+from models import PostgreSQL, College, Company, CompanyCollege, SortBy, SortByOptions, Order, OrderOptions, ItemPerson
 
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
@@ -16,6 +16,19 @@ from constants import DATABASE_URL, HOST, DEBUG, PORT
 db = PostgreSQL(DATABASE_URL)
 app = Flask(__name__)
 CORS(app)
+
+def get_dict_from_item(idx: int, item: ItemPerson):
+    return {
+        "id": idx,
+        "college_name": item.college.college_name, 
+        "company_name": item.company.company_name,
+        "role": item.company.role,
+        "ctc": item.company.ctc,
+        "hr_name" : item.person.name if item.person is not None else None,
+        "linkedin_id" : item.person.linkedin_id if item.person is not None else None,
+        "email" : item.person.email if item.person is not None else None,
+        "contact_number" :  item.person.contact_number if item.person is not None else None,
+    }
     
 @app.route('/companies', methods=['GET'])
 def get_companies():
@@ -49,13 +62,7 @@ def get_view_data():
         sort_by = SortByOptions.get(data.get('sort_by'))
         if sort_by is None: items = db.fetch_all_data()
         else: items = db.fetch_all_data_sorted(sort_by=sort_by)
-        return jsonify([{
-            "id": idx,
-            "college_name": item.college.college_name, 
-            "company_name": item.company.company_name,
-            "role": item.company.role,
-            "ctc": item.company.ctc
-        } for idx, item in enumerate(items)])
+        return jsonify([get_dict_from_item(idx, item) for idx, item in enumerate(items)])
     except Exception as e: return {"error": str(e)}, 500
     finally: db.remove()
 
@@ -63,13 +70,7 @@ def get_view_data():
 def download():
     try:
         items = db.fetch_all_data()
-        data = [{
-            "id": idx,
-            "college_name": item.college.college_name, 
-            "company_name": item.company.company_name,
-            "role": item.company.role,
-            "ctc": item.company.ctc
-        } for idx, item in enumerate(items)]
+        data = [get_dict_from_item(idx, item) for idx, item in enumerate(items)]
         df = pd.DataFrame(data)
         buffer = io.BytesIO()
         df.to_csv(buffer, index=False)
@@ -98,13 +99,7 @@ def search():
         else:
             items = db.search_with_filters(college_name=college_name, company_name=company_name, role=role)
 
-        return jsonify([{
-            "id": idx,
-            "college_name": item.college.college_name, 
-            "company_name": item.company.company_name,
-            "role": item.company.role,
-            "ctc": item.company.ctc
-        } for idx, item in enumerate(items)])
+        return jsonify([get_dict_from_item(idx, item) for idx, item in enumerate(items)])
     except Exception as e: return {"error": str(e)}, 500
     finally: db.remove()
 @app.route('/add', methods=['POST'])
@@ -116,6 +111,11 @@ def add_data():
         company_name = data.get('company_name')
         role = data.get('role')
         ctc = data.get('ctc')
+        
+        hr_name = data.get('hr_name')
+        linkedin_id = data.get('linkedin_id')
+        email = data.get('email')
+        contact_number = data.get('contact_number')
 
         if company_name is None or role is None or ctc is None or college_name is None:
             raise BadRequest("Missing required fields in request data")
@@ -125,9 +125,8 @@ def add_data():
         db.add_data(college_name=college_name,
                     company_name=company_name,
                     role=role,
-                    ctc=ctc)
+                    ctc=ctc, hr_name=hr_name, email=email, contact_number=contact_number, linkedin_id=linkedin_id)
         db.commit()
-        # db.close()
         return jsonify({"message": "Data added successfully!"}), 201
     except Exception as e: return {"error": str(e)}, 500
     finally: db.remove()
@@ -142,17 +141,25 @@ def upload_csv():
             # Use pandas to read the CSV file directly from the file object
             try:
                 df = pd.read_csv(file)  # , index_col=0
-                required_columns = ['College Name', 'Company Name', 'Role', 'CTC']
+                required_columns = ['college_name', 'company_name', 'role', 'ctc', 'hr_name', 'linkedin_id', 'email', 'contact_number']
                 missing_columns = [col for col in required_columns if col not in df.columns]
                 if missing_columns: 
                     return jsonify({"message": "Missing columns: " + ", ".join(missing_columns)}), 400
                 for i in range(0, len(df)):
                     c =  df.iloc[i]
-                    college_name, company_name, role, ctc = c["College Name"], c["Company Name"], c["Role"], c["CTC"]
-                    db.add_data(college_name=college_name,
-                                company_name=company_name,
-                                role=role,
-                                ctc=ctc)
+                    (college_name, company_name, role, ctc, 
+                     hr_name, linkedin_id, email, contact_number) = (c["college_name"], c["company_name"], c["role"], c["ctc"],
+                                                                     c["hr_name"], c["linkedin_id"], c["email"], c["contact_number"])
+                    
+                    db.add_data(college_name=str(college_name),
+                                company_name=str(company_name),
+                                role=str(role),
+                                ctc=float(ctc),
+                                hr_name=(str(hr_name) if not pd.isna(hr_name) else None),
+                                linkedin_id=(str(linkedin_id) if not pd.isna(linkedin_id) else None),
+                                email=(str(email) if not pd.isna(email) else None),
+                                contact_number=(str(contact_number) if not pd.isna(contact_number) else None)
+                    )
                 db.commit()
                 return jsonify({"message": "File uploaded successfully!"}), 201
             except Exception as e:
@@ -160,6 +167,8 @@ def upload_csv():
         return jsonify({"message": "Invalid file type. Only CSV files are allowed."}), 400
     except Exception as e: return {"error": str(e)}, 500
     finally: db.remove()
+
+#TODO
 @app.route('/edit-college-company', methods=['POST'])
 def edit_college_company():
     try:
@@ -182,16 +191,22 @@ def edit_college_company():
         new_ctc = data.get('new_ctc', old_ctc)
         try: new_ctc = float(new_ctc)
         except Exception as e: raise BadRequest("ctc must be real")
+        
+        new_hr_name = data.get('new_hr_name')
+        new_linkedin_id = data.get('new_linkedin_id')
+        new_email = data.get('new_email')
+        new_contact_number = data.get('new_contact_number')
 
         college = College.get(db.session, college_name=old_college_name)
         company = Company.get(db.session, company_name=old_company_name, role=old_role, ctc=old_ctc)
         if college is None or company is None: raise BadRequest("Data not found...")
 
-        college.unlink_company(company) # Item(college, company).unlink()
+        college.companies.remove(company)
         if len(college.companies) == 0: db.session.delete(college)
         if len(company.colleges) == 0: db.session.delete(company)
 
-        db.add_data(college_name=new_college_name, company_name=new_company_name, role=new_role, ctc=new_ctc)
+        db.add_data(college_name=new_college_name, company_name=new_company_name, role=new_role, ctc=new_ctc,
+                    hr_name=new_hr_name, email=new_email, contact_number=new_contact_number, linkedin_id=new_linkedin_id)
 
         db.commit()
         return jsonify({"message": "Data successfully deleted!"}), 201
@@ -216,7 +231,7 @@ def delete_college_company():
         company = Company.get(db.session, company_name=company_name, role=role, ctc=ctc)
         if college is None or company is None: raise BadRequest("Data not found...")
 
-        college.unlink_company(company) # Item(college, company).unlink()
+        college.companies.remove(company)
         if len(college.companies) == 0: db.session.delete(college)
         if len(company.colleges) == 0: db.session.delete(company)
 

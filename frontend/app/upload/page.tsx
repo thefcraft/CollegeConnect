@@ -72,7 +72,8 @@ function UploadData(){
       if (response.ok) {
         setStatusMessage('File uploaded successfully!');
       } else {
-        setErrorMessage('Error uploading file. Please try again.');
+        const result:{message: string;} = await response.json();
+        setErrorMessage(`Error uploading file. ${result.message}.`);
         setStatusMessage('');
       }
     } catch (error) {

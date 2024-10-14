@@ -60,10 +60,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { DashboardNav } from "@/components/nav";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
 import { API_URL } from "@/constants";
 
-type SuggestionOption = "college_name" | "company_name" | "role"
+type SuggestionOption = "college_name" | "company_name" | "role";
 
 function AddData() {
   const [formData, setFormData] = useState({
@@ -71,53 +71,64 @@ function AddData() {
     companyName: "",
     role: "",
     ctc: "",
+    hrName: "",
+    linkedinId: "",
+    email: "",
+    contactNumber: ""
   });
-  const { toast } = useToast()
+  const { toast } = useToast();
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const suggestionsRef = useRef<HTMLUListElement | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [suggestionOption, setSuggestionOption] = useState<SuggestionOption | null>(null)
+  const [suggestionOption, setSuggestionOption] =
+    useState<SuggestionOption | null>(null);
 
   const [loading, setLoading] = useState(true);
-  const [companies, setCompanies] = useState<string[]>([])
-  const [colleges, setColleges] = useState<string[]>([])
-  const [roles, setRoles] = useState<string[]>([])
+  const [companies, setCompanies] = useState<string[]>([]);
+  const [colleges, setColleges] = useState<string[]>([]);
+  const [roles, setRoles] = useState<string[]>([]);
   useEffect(() => {
     const fetchData = async () => {
       try {
         const getCompany = async () => {
           const response = await fetch(`${API_URL}/companies`);
           if (!response.ok) {
-              throw new Error('Network response was not ok');
+            throw new Error("Network response was not ok");
           }
-          const result:{
+          const result: {
             id: number;
             company_name: string;
             role: string;
             ctc: number;
           }[] = await response.json();
-          const companyNames = Array.from(new Set(result.map(company => company.company_name)));
-          const roleNames = Array.from(new Set(result.map(company => company.role)));
-          
+          const companyNames = Array.from(
+            new Set(result.map((company) => company.company_name))
+          );
+          const roleNames = Array.from(
+            new Set(result.map((company) => company.role))
+          );
+
           setCompanies(companyNames);
           setRoles(roleNames);
-        }
+        };
         const getCollege = async () => {
           const response = await fetch(`${API_URL}/colleges`);
           if (!response.ok) {
-              throw new Error('Network response was not ok');
+            throw new Error("Network response was not ok");
           }
-          const result:{
+          const result: {
             id: number;
             college_name: string;
           }[] = await response.json();
-          const collegeNames = Array.from(new Set(result.map(college => college.college_name)));
+          const collegeNames = Array.from(
+            new Set(result.map((college) => college.college_name))
+          );
           setColleges(collegeNames);
-        }
+        };
         await getCompany();
         await getCollege();
-      } catch (err ) {
+      } catch (err) {
         if (err instanceof Error) {
           alert(err.message);
         }
@@ -125,19 +136,24 @@ function AddData() {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
- 
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    if (value && (name === "collegeName" || name === "companyName" || name === "role")) {
+
+    if (
+      value &&
+      (name === "collegeName" || name === "companyName" || name === "role")
+    ) {
       setFilteredSuggestions(
-        suggestions.filter((suggestion) =>
-          suggestion.toLowerCase().includes(value.toLowerCase())
-        ).slice(0, 5)
+        suggestions
+          .filter((suggestion) =>
+            suggestion.toLowerCase().includes(value.toLowerCase())
+          )
+          .slice(0, 5)
       );
     } else {
       setFilteredSuggestions([]);
@@ -145,24 +161,30 @@ function AddData() {
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    if(suggestionOption === "college_name") setFormData({ ...formData, collegeName: suggestion });
-    else if(suggestionOption === "company_name") setFormData({ ...formData, companyName: suggestion });
-    else if(suggestionOption === "role") setFormData({ ...formData, role: suggestion });
+    if (suggestionOption === "college_name")
+      setFormData({ ...formData, collegeName: suggestion });
+    else if (suggestionOption === "company_name")
+      setFormData({ ...formData, companyName: suggestion });
+    else if (suggestionOption === "role")
+      setFormData({ ...formData, role: suggestion });
     setFilteredSuggestions([]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown') {
-      setHighlightedIndex((prevIndex) => 
-        // Math.min(prevIndex + 1, filteredSuggestions.length - 1)
-        (prevIndex + 1) % (filteredSuggestions.length || 1)  // Prevent division by zero
+    if (e.key === "ArrowDown") {
+      setHighlightedIndex(
+        (prevIndex) =>
+          // Math.min(prevIndex + 1, filteredSuggestions.length - 1)
+          (prevIndex + 1) % (filteredSuggestions.length || 1) // Prevent division by zero
       );
-    } else if (e.key === 'ArrowUp') {
-      setHighlightedIndex((prevIndex) => 
-        // Math.max(prevIndex - 1, 0)
-        (prevIndex - 1 + filteredSuggestions.length) % (filteredSuggestions.length || 1)  // Prevent negative index
+    } else if (e.key === "ArrowUp") {
+      setHighlightedIndex(
+        (prevIndex) =>
+          // Math.max(prevIndex - 1, 0)
+          (prevIndex - 1 + filteredSuggestions.length) %
+          (filteredSuggestions.length || 1) // Prevent negative index
       );
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       e.preventDefault();
       if (highlightedIndex >= 0) {
         handleSuggestionClick(filteredSuggestions[highlightedIndex]);
@@ -170,7 +192,10 @@ function AddData() {
     }
   };
   const handleClickOutside = (event: MouseEvent) => {
-    if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
+    if (
+      suggestionsRef.current &&
+      !suggestionsRef.current.contains(event.target as Node)
+    ) {
       setFilteredSuggestions([]);
     }
   };
@@ -193,20 +218,24 @@ function AddData() {
           company_name: formData.companyName,
           role: formData.role,
           ctc: formData.ctc,
+          hr_name: formData.hrName, 
+          linkedin_id: formData.linkedinId, 
+          email: formData.email, 
+          contact_number: formData.contactNumber
         };
         try {
           const response = await fetch(`${API_URL}/add`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(newData),
           });
-      
+
           if (!response.ok) {
             throw new Error(`Error: ${response.statusText}`);
           }
-      
+
           const result = await response.json();
           toast({
             title: "Success",
@@ -221,8 +250,8 @@ function AddData() {
         }
 
         console.log("Adding data:", { ...formData, ctc: ctcFloat });
-        
-        setFormData({ collegeName: "", companyName: "", role: "", ctc: "" });
+
+        setFormData({ collegeName: "", companyName: "", role: "", ctc: "", hrName: "", linkedinId: "", email: "", contactNumber: ""});
       } catch (error) {
         toast({
           title: "Error",
@@ -240,33 +269,40 @@ function AddData() {
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  
+
   const collegeNameSelect = () => {
     setSuggestionOption("college_name");
     setSuggestions(colleges);
-  }
+  };
 
   const companyNameSelect = () => {
     setSuggestionOption("company_name");
     setSuggestions(companies);
-  }
+  };
 
   const roleNameSelect = () => {
     setSuggestionOption("role");
     setSuggestions(roles);
-  }
+  };
 
   return (
     <div className="container mx-auto py-10">
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
         <h1 className="text-2xl font-bold mb-6">Add Data</h1>
         <div>
-          <Label htmlFor="collegeName">College Name</Label>
+          {formData.collegeName ? (
+            <Label htmlFor="collegeName">College Name</Label>
+          ) : (
+            <Label htmlFor="collegeName">
+              College Name
+              <span className="text-red-600 dark:text-red-400">*</span>
+            </Label>
+          )}
           <Input
             id="collegeName"
             name="collegeName"
@@ -275,24 +311,38 @@ function AddData() {
             onKeyDown={handleKeyDown}
             onSelect={collegeNameSelect}
             placeholder="Enter College Name"
+            required
           />
-          {filteredSuggestions.length > 0 && suggestionOption === "college_name" && (
-            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto">
-              {filteredSuggestions.map((suggestion, index) => (
-                <li
-                  key={suggestion}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-muted' : ''}`}
-                >
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
-          )}
+          {filteredSuggestions.length > 0 &&
+            suggestionOption === "college_name" && (
+              <ul
+                ref={suggestionsRef}
+                className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto"
+              >
+                {filteredSuggestions.map((suggestion, index) => (
+                  <li
+                    key={suggestion}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    className={`cursor-pointer p-2 ${
+                      highlightedIndex === index ? "bg-muted" : ""
+                    }`}
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            )}
         </div>
         <div>
-          <Label htmlFor="companyName">Company Name</Label>
+          {formData.companyName ? (
+            <Label htmlFor="companyName">Company Name</Label>
+          ) : (
+            <Label htmlFor="companyName">
+              Company Name
+              <span className="text-red-600 dark:text-red-400">*</span>
+            </Label>
+          )}
           <Input
             id="companyName"
             name="companyName"
@@ -301,24 +351,37 @@ function AddData() {
             onKeyDown={handleKeyDown}
             onSelect={companyNameSelect}
             placeholder="Enter Company Name"
+            required
           />
-          {filteredSuggestions.length > 0  && suggestionOption === "company_name" && (
-            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto">
-              {filteredSuggestions.map((suggestion, index) => (
-                <li
-                  key={suggestion}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-muted' : ''}`}
-                >
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
-          )}
+          {filteredSuggestions.length > 0 &&
+            suggestionOption === "company_name" && (
+              <ul
+                ref={suggestionsRef}
+                className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto"
+              >
+                {filteredSuggestions.map((suggestion, index) => (
+                  <li
+                    key={suggestion}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    className={`cursor-pointer p-2 ${
+                      highlightedIndex === index ? "bg-muted" : ""
+                    }`}
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            )}
         </div>
         <div>
-          <Label htmlFor="role">Role</Label>
+          {formData.role ? (
+            <Label htmlFor="role">Role</Label>
+          ) : (
+            <Label htmlFor="role">
+              Role<span className="text-red-600 dark:text-red-400">*</span>
+            </Label>
+          )}
           <Input
             id="role"
             name="role"
@@ -327,15 +390,21 @@ function AddData() {
             onKeyDown={handleKeyDown}
             onSelect={roleNameSelect}
             placeholder="Enter Role"
+            required
           />
           {filteredSuggestions.length > 0 && suggestionOption === "role" && (
-            <ul ref={suggestionsRef} className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <ul
+              ref={suggestionsRef}
+              className="absolute z-10 mt-1 border border-gray-300 bg-background rounded-md shadow-lg max-h-60 overflow-y-auto"
+            >
               {filteredSuggestions.map((suggestion, index) => (
                 <li
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`cursor-pointer p-2 ${highlightedIndex === index ? 'bg-muted' : ''}`}
+                  className={`cursor-pointer p-2 ${
+                    highlightedIndex === index ? "bg-muted" : ""
+                  }`}
                 >
                   {suggestion}
                 </li>
@@ -344,7 +413,13 @@ function AddData() {
           )}
         </div>
         <div>
-          <Label htmlFor="ctc">CTC</Label>
+          {formData.ctc ? (
+            <Label htmlFor="ctc">CTC</Label>
+          ) : (
+            <Label htmlFor="ctc">
+              CTC<span className="text-red-600 dark:text-red-400">*</span>
+            </Label>
+          )}
           <Input
             id="ctc"
             name="ctc"
@@ -352,8 +427,60 @@ function AddData() {
             onChange={handleInputChange}
             placeholder="e.g., 50000.00"
             type="number"
+            required
           />
         </div>
+
+        {/* Optional HR Name */}
+        <div>
+          <Label htmlFor="hrName">HR Name</Label>
+          <Input
+            id="hrName"
+            name="hrName"
+            value={formData.hrName}
+            onChange={handleInputChange}
+            placeholder="Enter HR Name (optional)"
+          />
+        </div>
+
+        {/* Optional LinkedIn ID */}
+        <div>
+          <Label htmlFor="linkedinId">LinkedIn ID</Label>
+          <Input
+            id="linkedinId"
+            name="linkedinId"
+            value={formData.linkedinId}
+            onChange={handleInputChange}
+            placeholder="Enter LinkedIn ID (optional)"
+          />
+        </div>
+
+        {/* Optional Email */}
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            type="email"
+            placeholder="Enter Email (optional)"
+          />
+        </div>
+
+        {/* Optional Contact Number */}
+        <div>
+          <Label htmlFor="contactNumber">Contact Number</Label>
+          <Input
+            id="contactNumber"
+            name="contactNumber"
+            value={formData.contactNumber}
+            onChange={handleInputChange}
+            type="tel"
+            placeholder="Enter Contact Number (optional)"
+          />
+        </div>
+        
         <Button type="submit">Add Data</Button>
       </form>
     </div>
@@ -361,12 +488,24 @@ function AddData() {
 }
 
 const navItems = [
-  { name: 'Search', href: '/', icon: <Search className="mr-2 h-4 w-4" /> },
-  { name: 'Add', href: '/add', icon: <FilePlus className="mr-2 h-4 w-4" /> },
-  { name: 'Edit/Delete', href: '/edit', icon: <Edit className="mr-2 h-4 w-4" /> },
-  { name: 'View All', href: '/view', icon: <Database className="mr-2 h-4 w-4" /> },
-  { name: 'Mass Upload', href: '/upload', icon: <Upload className="mr-2 h-4 w-4" /> },
-]
+  { name: "Search", href: "/", icon: <Search className="mr-2 h-4 w-4" /> },
+  { name: "Add", href: "/add", icon: <FilePlus className="mr-2 h-4 w-4" /> },
+  {
+    name: "Edit/Delete",
+    href: "/edit",
+    icon: <Edit className="mr-2 h-4 w-4" />,
+  },
+  {
+    name: "View All",
+    href: "/view",
+    icon: <Database className="mr-2 h-4 w-4" />,
+  },
+  {
+    name: "Mass Upload",
+    href: "/upload",
+    icon: <Upload className="mr-2 h-4 w-4" />,
+  },
+];
 
 export default function () {
   return (

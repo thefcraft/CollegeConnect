@@ -1,4 +1,21 @@
 import { motion } from 'framer-motion'
+import React from 'react'
+
+// import { Label } from "@/components/ui/label";
+
+// interface LabelWithAsteriskProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+//   children: React.ReactNode;
+// }
+// export const LabelWithAsterisk: React.FC<LabelWithAsteriskProps> = ({ children, ...props }) => {
+//   return (
+//     <>
+//       <label {...props}>
+//         {children}
+//         <span className="text-red-600 dark:text-red-400">*</span>
+//       </label>
+//     </>
+//   );
+// };
 
 
 export function MinimalLoading() {
