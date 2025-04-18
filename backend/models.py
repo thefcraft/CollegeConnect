@@ -1,15 +1,13 @@
 from typing import NewType, Union, List, Optional, Any, Tuple, Dict, NamedTuple
 
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, UniqueConstraint, asc, desc, and_
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, UniqueConstraint, asc, desc, and_, func # Add func
 from sqlalchemy.orm import relationship, declarative_base, Mapped
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import sessionmaker, Session, scoped_session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.engine import Engine
 
-# DEBUG Load environment variables from .env file
-from dotenv import load_dotenv; load_dotenv()
-
+from constants import DEBUG
 
 SortBy = NewType("SortBy", str)
 SortByOptions: Dict[str, SortBy] = {
@@ -143,7 +141,26 @@ class ItemPerson(NamedTuple):
     college: College
     company: Company
     person: Optional[Person] = None
-        
+
+class AnalyticsSummary(NamedTuple):
+    total_colleges: int
+    total_companies: int # Unique company definitions (name, role, ctc)
+    total_placements: int # Total entries in CompanyCollege
+    average_ctc: Optional[float]
+    max_ctc: Optional[float]
+    min_ctc: Optional[float]
+
+class TopListItem(NamedTuple):
+    name: str
+    count: int # Could be visit count or something else
+
+class TopCtcItem(NamedTuple):
+    company_name: str
+    role: str
+    ctc: float
+    college_name: str # Added college context for highest CTC
+
+
 class PostgreSQL:
     def __init__(self, db_url:str):
         self.db_url = db_url
@@ -159,6 +176,7 @@ class PostgreSQL:
         # Create the database and tables
         Base.metadata.create_all(self.engine)
     def delete_all(self):
+        if not DEBUG: raise RuntimeError("can't delete all tables in a production environment")
         # delete all tables and create new tables 
         Base.metadata.drop_all(self.engine)
         self.create_all()
@@ -296,3 +314,78 @@ class PostgreSQL:
         # Create a list of Item instances from the results
         items = [ItemPerson(college=college, company=company, person=person) for college, company, person in results]
         return items
+
+    # --- Analytics Methods ---
+
+    def get_analytics_summary(self) -> AnalyticsSummary:
+        """Calculates basic summary statistics."""
+        total_colleges = self.session.query(func.count(College.id)).scalar()
+        total_companies = self.session.query(func.count(Company.id)).scalar() # Counts unique company definitions
+        total_placements = self.session.query(func.count(CompanyCollege.company_id)).scalar() # Counts actual placement records
+
+        # Calculate CTC stats based on actual placements
+        ctc_stats = self.session.query(
+            func.avg(Company.ctc),
+            func.max(Company.ctc),
+            func.min(Company.ctc)
+        ).select_from(CompanyCollege).join(Company, CompanyCollege.company_id == Company.id).one()
+
+        avg_ctc, max_ctc, min_ctc = ctc_stats
+
+        return AnalyticsSummary(
+            total_colleges=total_colleges or 0,
+            total_companies=total_companies or 0,
+            total_placements=total_placements or 0,
+            average_ctc=float(avg_ctc) if avg_ctc is not None else None,
+            max_ctc=float(max_ctc) if max_ctc is not None else None,
+            min_ctc=float(min_ctc) if min_ctc is not None else None,
+        )
+
+    def get_top_companies_by_visits(self, n: int = 5) -> List[TopListItem]:
+        """Gets the top N companies based on the number of distinct colleges visited."""
+        results = (
+            self.session.query(
+                Company.company_name,
+                func.count(CompanyCollege.college_id).label('visit_count')
+            )
+            .join(CompanyCollege, Company.id == CompanyCollege.company_id)
+            .group_by(Company.id, Company.company_name) # Group by company ID and name
+            .order_by(desc('visit_count'))
+            .limit(n)
+            .all()
+        )
+        return [TopListItem(name=name, count=count) for name, count in results]
+
+    def get_top_colleges_by_visits(self, n: int = 5) -> List[TopListItem]:
+        """Gets the top N colleges based on the number of distinct companies visiting."""
+        results = (
+            self.session.query(
+                College.college_name,
+                func.count(CompanyCollege.company_id).label('visit_count')
+            )
+            .join(CompanyCollege, College.id == CompanyCollege.college_id)
+            .group_by(College.id, College.college_name) # Group by college ID and name
+            .order_by(desc('visit_count'))
+            .limit(n)
+            .all()
+        )
+        return [TopListItem(name=name, count=count) for name, count in results]
+
+    def get_top_placements_by_ctc(self, n: int = 5) -> List[TopCtcItem]:
+        """Gets the top N individual placements (college-company pairs) by CTC."""
+        results = (
+            self.session.query(
+                Company.company_name,
+                Company.role,
+                Company.ctc,
+                College.college_name
+            )
+            .select_from(CompanyCollege)
+            .join(Company, CompanyCollege.company_id == Company.id)
+            .join(College, CompanyCollege.college_id == College.id)
+            .order_by(desc(Company.ctc))
+            .limit(n)
+            .all()
+        )
+        return [TopCtcItem(company_name=c_name, role=role, ctc=ctc, college_name=col_name)
+                for c_name, role, ctc, col_name in results]

@@ -56,6 +56,7 @@ import {
   Save,
   Check,
   ChevronsUpDown,
+  BarChart3,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { DashboardNav } from "@/components/nav";
@@ -541,6 +542,7 @@ const navItems = [
   { name: 'Search', href: '/', icon: <Search className="mr-2 h-4 w-4" /> },
   { name: 'Add', href: '/add', icon: <FilePlus className="mr-2 h-4 w-4" /> },
   { name: 'Edit/Delete', href: '/edit', icon: <Edit className="mr-2 h-4 w-4" /> },
+  { name: 'Analytics', href: '/analytics', icon: <BarChart3 className="mr-2 h-4 w-4" /> }, // Added Analytics
   { name: 'View All', href: '/view', icon: <Database className="mr-2 h-4 w-4" /> },
   { name: 'Mass Upload', href: '/upload', icon: <Upload className="mr-2 h-4 w-4" /> },
 ]

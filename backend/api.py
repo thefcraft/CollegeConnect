@@ -1,3 +1,4 @@
+from constants import HOST, DATABASE_URL, PORT, DEBUG
 import io, os
 import pandas as pd
 from enum import Enum
@@ -5,13 +6,14 @@ from urllib.parse import urlparse
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import NewType, Union, List, Optional, Any, Tuple, Dict, NamedTuple
-from models import PostgreSQL, College, Company, CompanyCollege, SortBy, SortByOptions, Order, OrderOptions, ItemPerson
+from models import (
+    PostgreSQL, College, Company, CompanyCollege, SortBy, SortByOptions, Order, OrderOptions, ItemPerson, 
+    AnalyticsSummary, TopListItem, TopCtcItem
+)
 
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 from werkzeug.exceptions import BadRequest
-
-from constants import DATABASE_URL, HOST, DEBUG, PORT
 
 db = PostgreSQL(DATABASE_URL)
 app = Flask(__name__)
@@ -168,7 +170,6 @@ def upload_csv():
     except Exception as e: return {"error": str(e)}, 500
     finally: db.remove()
 
-#TODO
 @app.route('/edit-college-company', methods=['POST'])
 def edit_college_company():
     try:
@@ -240,6 +241,42 @@ def delete_college_company():
         return jsonify({"message": "Data successfully deleted!"}), 201
     except Exception as e: return {"error": str(e)}, 500
     finally: db.remove()
+
+@app.route('/analytics', methods=['GET'])
+def get_analytics():
+    """
+    Provides various analytics data.
+    Accepts optional query parameter 'n' for top lists (default 5).
+    """
+    try:
+        # Get 'n' from query parameters, default to 5 if not provided or invalid
+        try:
+            n = int(request.args.get('n', 5))
+            if n <= 0: n = 5
+        except ValueError:
+            n = 5
+
+        summary = db.get_analytics_summary()
+        top_companies_visits = db.get_top_companies_by_visits(n)
+        top_colleges_visits = db.get_top_colleges_by_visits(n)
+        top_placements_ctc = db.get_top_placements_by_ctc(n)
+
+        # Convert NamedTuples to dictionaries for JSON serialization
+        analytics_data = {
+            "summary": summary._asdict(),
+            f"top_{n}_companies_by_visits": [item._asdict() for item in top_companies_visits],
+            f"top_{n}_colleges_by_visits": [item._asdict() for item in top_colleges_visits],
+            f"top_{n}_placements_by_ctc": [item._asdict() for item in top_placements_ctc],
+        }
+
+        return jsonify(analytics_data)
+
+    except Exception as e:
+        # Log the exception details here if needed
+        print(f"Error in /analytics: {e}") # Basic logging
+        return jsonify({"error": f"An internal error occurred: {str(e)}"}), 500
+    finally:
+        db.remove()
 
 # Add more routes for updating, deleting, and searching...
 

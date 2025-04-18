@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit, Trash2, ArrowUpDown, Menu, X, LayoutDashboard, Database, FilePlus, Search, Upload, Save  } from "lucide-react"
+import { Edit, Trash2, ArrowUpDown, Menu, X, LayoutDashboard, Database, FilePlus, Search, Upload, Save, BarChart3  } from "lucide-react"
 import { DashboardNav } from '@/components/nav'
 
 import { API_URL } from "@/constants";
@@ -486,6 +486,7 @@ const navItems = [
   { name: 'Search', href: '/', icon: <Search className="mr-2 h-4 w-4" /> },
   { name: 'Add', href: '/add', icon: <FilePlus className="mr-2 h-4 w-4" /> },
   { name: 'Edit/Delete', href: '/edit', icon: <Edit className="mr-2 h-4 w-4" /> },
+  { name: 'Analytics', href: '/analytics', icon: <BarChart3 className="mr-2 h-4 w-4" /> }, // Added Analytics
   { name: 'View All', href: '/view', icon: <Database className="mr-2 h-4 w-4" /> },
   { name: 'Mass Upload', href: '/upload', icon: <Upload className="mr-2 h-4 w-4" /> },
 ]
