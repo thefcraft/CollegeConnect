@@ -1,0 +1,43 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "frontend/out/**/*",     
+            "use": "@vercel/static"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/_next/(.*)",
+            "dest": "frontend/out/_next/$1"
+        },
+        {
+            "src": "/add",
+            "dest": "frontend/out/add.html"
+        },
+        {
+            "src": "/analytics",
+            "dest": "frontend/out/analytics.html"
+        },
+        {
+            "src": "/edit",
+            "dest": "frontend/out/edit.html"
+        },
+        {
+            "src": "/upload",
+            "dest": "frontend/out/upload.html"
+        },
+        {
+            "src": "/view",
+            "dest": "frontend/out/view.html"
+        },
+        {
+            "src": "/",
+            "dest": "frontend/out/index.html"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "frontend/out/404.html"
+        }
+    ]
+}

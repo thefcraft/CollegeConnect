@@ -278,7 +278,5 @@ def get_analytics():
     finally:
         db.remove()
 
-# Add more routes for updating, deleting, and searching...
-
 if __name__ == '__main__':
     app.run(debug=DEBUG, host=HOST, port=PORT)
